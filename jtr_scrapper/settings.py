@@ -14,6 +14,18 @@ BOT_NAME = 'jtr_scrapper'
 SPIDER_MODULES = ['jtr_scrapper.spiders']
 NEWSPIDER_MODULE = 'jtr_scrapper.spiders'
 
+ITEM_PIPELINES = [
+  'scrapyelasticsearch.scrapyelasticsearch.ElasticSearchPipeline',
+]
+ELASTICSEARCH_SERVER = 'localhost'
+ELASTICSEARCH_PORT = 9200
+ELASTICSEARCH_INDEX = 'jtr'
+ELASTICSEARCH_TYPE = 'jtr'
+from scrapy import log
+
+ELASTICSEARCH_LOG_LEVEL= log.DEBUG
+
+
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = 'jtr_scrapper (+http://www.yourdomain.com)'

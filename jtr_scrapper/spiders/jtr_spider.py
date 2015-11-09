@@ -3,7 +3,7 @@ __author__ = 'christoph'
 import scrapy
 from jtr_scrapper.items import JtrTeamRankingItem, JtrTournamentItem, JtrTournamentPartition
 import datetime
-
+import uuid
 
 class Jtr_Spider(scrapy.Spider):
     name = "jtrspider"
@@ -24,6 +24,7 @@ class Jtr_Spider(scrapy.Spider):
                 team_name = sel.xpath('td/a/text()').extract_first()
                 data = sel.xpath('td/text()').extract()
                 ranking_item = JtrTeamRankingItem()
+                ranking_item["id"] = str(uuid.uuid4())
                 ranking_item['team_name'] = team_name
                 if len(data) == 4:
                     ranking, city, tournaments, points = data
@@ -47,8 +48,9 @@ class Jtr_Spider(scrapy.Spider):
                 if len(data) == 6:
                     date, town, ranking, zf, tw, points = data
                     item = JtrTournamentPartition()
+                    item["id"] = str(uuid.uuid4())
                     item['tournament_date'] = date
-                    item['date'] = datetime.datetime.now()
+                    item['crawl_date'] = datetime.datetime.now()
                     item['ranking'] = ranking.split("/")[0].strip()
                     item['team_name'] = team
                     item['tournament_town'] = town

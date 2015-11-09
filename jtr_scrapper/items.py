@@ -11,6 +11,7 @@ import scrapy
 class JtrTeamRankingItem(scrapy.Item):
     # define the fields for your item here like:
     # name = scrapy.Field()
+    id = scrapy.Field()
     team_name = scrapy.Field()
     ranking = scrapy.Field()
     crawl_date = scrapy.Field()
@@ -19,14 +20,16 @@ class JtrTeamRankingItem(scrapy.Item):
     number_of_tournaments = scrapy.Field()
 
 class JtrTournamentPartition(scrapy.Item):
+    id = scrapy.Field()
     team_name = scrapy.Field()
     tournament_name = scrapy.Field()
     tournament_town = scrapy.Field()
     ranking = scrapy.Field()
     tournament_date = scrapy.Field()
-    date = scrapy.Field()
+    crawl_date = scrapy.Field()
 
 class JtrTournamentItem(scrapy.Item):
+    id = scrapy.Field(type="string")
     tournament_name = scrapy.Field()
     tournament_date = scrapy.Field()
     participants = scrapy.Field()
