@@ -15,10 +15,11 @@ SPIDER_MODULES = ['jtr_scrapper.spiders']
 NEWSPIDER_MODULE = 'jtr_scrapper.spiders'
 
 ITEM_PIPELINES = [
-  'scrapyelasticsearch.scrapyelasticsearch.ElasticSearchPipeline',
+  'jtr_scrapper.elasticsearchPipeline.ElasticSearchPipeline',
 ]
-ELASTICSEARCH_SERVER = 'localhost'
+ELASTICSEARCH_HOST = 'localhost'
 ELASTICSEARCH_PORT = 9200
+ELASTICSEARCH_FLUSH_LIMIT = 1
 ELASTICSEARCH_INDEX = 'jtr'
 ELASTICSEARCH_TYPE = 'jtr'
 from scrapy import log
