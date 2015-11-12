@@ -7,29 +7,30 @@
 
 import scrapy
 import elasticsearchPipeline as esp
+import elasticsearch_dsl
 
 class JtrTeamRankingItem(esp.ElasticSearchBaseItem):
     # define the fields for your item here like:
     # name = scrapy.Field()
-    id = scrapy.Field()
+    INDEX_PARAMETER = dict(name="global_ranking", drop=False)
     team_name = scrapy.Field(fields={'raw': elasticsearch_dsl.String(index='not_analyzed')})
-    ranking = scrapy.Field(fields={'raw': elasticsearch_dsl.String(index='not_analyzed')})
-    crawl_date = scrapy.Field(fields={'raw': elasticsearch_dsl.String(index='not_analyzed')})
+    ranking = scrapy.Field(type="integer")
+    crawl_date = scrapy.Field(type="date", fields={'raw': elasticsearch_dsl.String(index='not_analyzed')})
     hometown = scrapy.Field(fields={'raw': elasticsearch_dsl.String(index='not_analyzed')})
-    points = scrapy.Field(fields={'raw': elasticsearch_dsl.String(index='not_analyzed')})
+    points = scrapy.Field(type="float")
     number_of_tournaments = scrapy.Field(fields={'raw': elasticsearch_dsl.String(index='not_analyzed')})
 
 class JtrTournamentPartition(esp.ElasticSearchBaseItem):
-    id = scrapy.Field()
+    INDEX_PARAMETER = dict(name="tournament_partitions", drop=True)
     team_name = scrapy.Field(fields={'raw': elasticsearch_dsl.String(index='not_analyzed')})
+    team_hometown = scrapy.Field(fields={'raw': elasticsearch_dsl.String(index='not_analyzed')})
     tournament_name = scrapy.Field(fields={'raw': elasticsearch_dsl.String(index='not_analyzed')})
     tournament_town = scrapy.Field(fields={'raw': elasticsearch_dsl.String(index='not_analyzed')})
     ranking = scrapy.Field(fields={'raw': elasticsearch_dsl.String(index='not_analyzed')})
-    tournament_date = scrapy.Field(fields={'raw': elasticsearch_dsl.String(index='not_analyzed')})
-    crawl_date = scrapy.Field(fields={'raw': elasticsearch_dsl.String(index='not_analyzed')})
+    tournament_date = scrapy.Field(type="date", fields={'raw': elasticsearch_dsl.String(index='not_analyzed')})
+    crawl_date = scrapy.Field(type="date", fields={'raw': elasticsearch_dsl.String(index='not_analyzed')})
 
 class JtrTournamentItem(scrapy.Item):
-    id = scrapy.Field(type="string")
     tournament_name = scrapy.Field()
     tournament_date = scrapy.Field()
     participants = scrapy.Field()

@@ -7,6 +7,8 @@ import json
 
 class ElasticSearchBaseItem(scrapy.Item):
 
+    INDEX_PARAMETER = dict(drop=False)
+
     @classmethod
     def get_mapping(cls):
         m = elasticsearch_dsl.Mapping(cls.__name__)
@@ -29,9 +31,16 @@ class ElasticSearchBaseItem(scrapy.Item):
                     return json.JSONEncoder.default(self, obj)
         return Encoder
 
+    def get_index_name(self):
+        index_name = self.__class__.__name__.lower()
+        if "name" in self.INDEX_PARAMETER:
+            index_name = self.INDEX_PARAMETER["name"]
+        return index_name
 
 
-class TestESItem(ElasticSearchBaseItem):
+
+class ExampleESItem(ElasticSearchBaseItem):
+    INDEX_PARAMETER = dict(name="test", drop=False)
     date = scrapy.Field(type="date")
     raw_field = scrapy.Field(type="string", fields={'raw': elasticsearch_dsl.String(index='not_analyzed')})
 
@@ -69,7 +78,7 @@ class ElasticSearchPipeline(object):
     def flush(self):
         json_strings = []
         for item in self.item_queue:
-            index_name = item.__class__.__name__.lower()
+            index_name = item.get_index_name()
             type_name = item.__class__.__name__
             id = str(uuid.uuid4())
             action_dict = dict(_index=index_name, _type=type_name, _id=id, **dict(item))
@@ -82,9 +91,13 @@ class ElasticSearchPipeline(object):
     def process_item(self, item, spider):
         if isinstance(item, ElasticSearchBaseItem):
             class_name = item.__class__.__name__
-            if class_name not in self.INDICES:
+            if class_name not in self.__class__.INDICES:
+                index_name = item.get_index_name()
                 mapping = item.__class__.get_mapping()
-                mapping.save(class_name.lower(), using = self.es)
-                self.INDICES[class_name] = dict(mapping=mapping, index_name=class_name)
+                if "drop" in item.INDEX_PARAMETER:
+                    if item.INDEX_PARAMETER["drop"]:
+                        self.es.indices.delete(index=index_name, ignore=[404])
+                mapping.save(index_name, using = self.es)
+                self.__class__.INDICES[class_name] = dict(mapping=mapping, index_name=item.get_index_name())
             self.write(item)
         return item

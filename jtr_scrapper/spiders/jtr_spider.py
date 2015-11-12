@@ -4,6 +4,7 @@ import scrapy
 from jtr_scrapper.items import JtrTeamRankingItem, JtrTournamentItem, JtrTournamentPartition
 import datetime
 import uuid
+import utils
 
 class Jtr_Spider(scrapy.Spider):
     name = "jtrspider"
@@ -24,16 +25,15 @@ class Jtr_Spider(scrapy.Spider):
                 team_name = sel.xpath('td/a/text()').extract_first()
                 data = sel.xpath('td/text()').extract()
                 ranking_item = JtrTeamRankingItem()
-                ranking_item["id"] = str(uuid.uuid4())
-                ranking_item['team_name'] = team_name
+                ranking_item['team_name'] = utils.unescape(team_name)
                 if len(data) == 4:
                     ranking, city, tournaments, points = data
                 else:
                     city, tournaments, points = data
-                ranking_item['ranking'] = ranking
-                ranking_item['hometown'] = city
-                ranking_item['points'] = points
-                ranking_item['number_of_tournaments'] = tournaments
+                ranking_item['ranking'] = int(ranking.split("/")[0].strip().strip("."))
+                ranking_item['hometown'] = utils.unescape(city)
+                ranking_item['points'] = float(points)
+                ranking_item['number_of_tournaments'] = utils.unescape(tournaments)
                 ranking_item['crawl_date'] = datetime.datetime.now()
                 yield  ranking_item
                 yield scrapy.Request(response.urljoin(team_link), callback=self.parse_team_site)
@@ -48,13 +48,14 @@ class Jtr_Spider(scrapy.Spider):
                 if len(data) == 6:
                     date, town, ranking, zf, tw, points = data
                     item = JtrTournamentPartition()
-                    item["id"] = str(uuid.uuid4())
                     item['tournament_date'] = date
                     item['crawl_date'] = datetime.datetime.now()
-                    item['ranking'] = ranking.split("/")[0].strip()
-                    item['team_name'] = team
-                    item['tournament_town'] = town
-                    item['tournament_name'] = tournament_name
+                    item['ranking'] = int(ranking.split("/")[0].strip().strip("."))
+                    home_town, team_name = team.split("-", 1)
+                    item['team_name'] = utils.unescape(team_name.strip())
+                    item['team_hometown'] = utils.unescape(home_town.strip())
+                    item['tournament_town'] = utils.unescape(town)
+                    item['tournament_name'] = utils.unescape(tournament_name)
                     yield item
                     #yield scrapy.Request(response.urljoin(tournament_link), callback=self.find_tournament_results)
 
