@@ -1,0 +1,5 @@
+scrapy
+geopy
+Geohash
+elasticsearch
+elasticsearch-dsl

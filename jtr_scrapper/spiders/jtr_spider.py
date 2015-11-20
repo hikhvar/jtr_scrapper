@@ -5,11 +5,16 @@ from jtr_scrapper.items import JtrTeamRankingItem, JtrTournamentItem, JtrTournam
 import datetime
 import uuid
 import utils
+import Geohash as geohash
+import geopy
+import geopy.distance as geodistance
 
 class Jtr_Spider(scrapy.Spider):
     name = "jtrspider"
     allowed_domains = ["turniere.jugger.org"]
     start_urls = [ "http://turniere.jugger.org/rank.team.php" ]
+    geo_locator = geopy.Nominatim()
+    location_cache = {}
 
     def parse(self, response):
         title = response.xpath('//div[@class="title"]/text()').extract_first()
@@ -46,7 +51,7 @@ class Jtr_Spider(scrapy.Spider):
                 data = sel.xpath('td/text()').extract()
                 tournament_name = sel.xpath('td/a/text()').extract_first()
                 if len(data) == 6:
-                    date, town, ranking, zf, tw, points = data
+                    date, tournament_town, ranking, zf, tw, points = data
                     item = JtrTournamentPartition()
                     item['tournament_date'] = date
                     item['crawl_date'] = datetime.datetime.now()
@@ -54,8 +59,13 @@ class Jtr_Spider(scrapy.Spider):
                     home_town, team_name = team.split("-", 1)
                     item['team_name'] = utils.unescape(team_name.strip())
                     item['team_hometown'] = utils.unescape(home_town.strip())
-                    item['tournament_town'] = utils.unescape(town)
+                    item['tournament_town'] = utils.unescape(tournament_town)
                     item['tournament_name'] = utils.unescape(tournament_name)
+                    home_town = self._locate(home_town)
+                    tournament_town = self._locate(tournament_town)
+                    item["team_hometown_position"] = self._get_geohash(home_town)
+                    item["tournament_town_position"] = self._get_geohash(tournament_town)
+                    item["distance"] = self._get_distance(home_town, tournament_town)
                     yield item
                     #yield scrapy.Request(response.urljoin(tournament_link), callback=self.find_tournament_results)
 
@@ -66,3 +76,25 @@ class Jtr_Spider(scrapy.Spider):
     def parse_tournament_results(self, response):
         pass
 
+    def _locate(self, town_name):
+        town_name = utils.unescape(town_name.strip())
+        if town_name not in self.location_cache:
+            try:
+                self.location_cache[town_name] = self.geo_locator.geocode(town_name)
+            except geopy.GeocoderTimedOut:
+                print "Geocoder Timeout."
+                return None
+        return self.location_cache[town_name]
+
+
+    def _get_geohash(self, town):
+        if town is not None:
+            return geohash.encode(town.latitude, town.longitude)
+        else:
+            return None
+
+    def _get_distance(self, town_a, town_b):
+        if town_a is None or town_b is None:
+            return None
+        else:
+            return geodistance.great_circle(town_a.point, town_b.point).kilometers

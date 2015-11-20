@@ -37,6 +37,12 @@ class ElasticSearchBaseItem(scrapy.Item):
             index_name = self.INDEX_PARAMETER["name"]
         return index_name
 
+    def get_id(self):
+        return str(uuid.uuid4())
+
+    def get_elasticsearch_document(self):
+        return dict(self)
+
 
 
 class ExampleESItem(ElasticSearchBaseItem):
@@ -51,6 +57,8 @@ class ElasticSearchPipeline(object):
 
     def __init__(self, host="localhost", port="9200", flush_limit=1000):
         self.counter = 0
+        self.host = host
+        self.port = port
         self.flush_limit = flush_limit
         self.item_queue = []
         self.es = elasticsearch.Elasticsearch(hosts=[dict(host=host, port=port)])
@@ -80,8 +88,9 @@ class ElasticSearchPipeline(object):
         for item in self.item_queue:
             index_name = item.get_index_name()
             type_name = item.__class__.__name__
-            id = str(uuid.uuid4())
-            action_dict = dict(_index=index_name, _type=type_name, _id=id, **dict(item))
+            id = item.get_id()
+            document = item.get_elasticsearch_document()
+            action_dict = dict(_index=index_name, _type=type_name, _id=id, **document)
             json_dump = json.dumps(action_dict, cls=item.get_encoder_class())
             json_strings.append(json.loads(json_dump))
         elasticsearch.helpers.bulk(self.es, json_strings)

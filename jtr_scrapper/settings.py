@@ -14,17 +14,12 @@ BOT_NAME = 'jtr_scrapper'
 SPIDER_MODULES = ['jtr_scrapper.spiders']
 NEWSPIDER_MODULE = 'jtr_scrapper.spiders'
 
-ITEM_PIPELINES = [
-  'jtr_scrapper.elasticsearchPipeline.ElasticSearchPipeline',
-]
+ITEM_PIPELINES = {
+  'jtr_scrapper.elasticsearchPipeline.ElasticSearchPipeline':100
+}
 ELASTICSEARCH_HOST = 'localhost'
 ELASTICSEARCH_PORT = 9200
-ELASTICSEARCH_FLUSH_LIMIT = 1
-ELASTICSEARCH_INDEX = 'jtr'
-ELASTICSEARCH_TYPE = 'jtr'
-from scrapy import log
-
-ELASTICSEARCH_LOG_LEVEL= log.DEBUG
+ELASTICSEARCH_FLUSH_LIMIT = 1000
 
 
 
