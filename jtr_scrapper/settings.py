@@ -17,7 +17,7 @@ NEWSPIDER_MODULE = 'jtr_scrapper.spiders'
 ITEM_PIPELINES = {
   'jtr_scrapper.elasticsearchPipeline.ElasticSearchPipeline':100
 }
-ELASTICSEARCH_HOST = 'localhost'
+ELASTICSEARCH_HOST = 'elasticsearch'
 ELASTICSEARCH_PORT = 9200
 ELASTICSEARCH_FLUSH_LIMIT = 1000
 

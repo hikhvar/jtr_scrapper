@@ -1,5 +1,8 @@
 elasticsearch:
   image: elasticsearch:1.7
+  volumes:
+    - ./esdata:/usr/share/elasticsearch/data
+    - ./esbackup:/backup
   ports:
     - "9200:9200"
 kibana:

@@ -7,6 +7,7 @@ import uuid
 import utils
 import Geohash as geohash
 import geopy
+import geopy.exc
 import geopy.distance as geodistance
 
 class Jtr_Spider(scrapy.Spider):
@@ -81,7 +82,7 @@ class Jtr_Spider(scrapy.Spider):
         if town_name not in self.location_cache:
             try:
                 self.location_cache[town_name] = self.geo_locator.geocode(town_name)
-            except geopy.GeocoderTimedOut:
+            except geopy.exc.GeocoderTimedOut:
                 print "Geocoder Timeout."
                 return None
         return self.location_cache[town_name]
